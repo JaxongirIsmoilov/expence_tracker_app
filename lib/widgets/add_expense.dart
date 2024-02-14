@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -42,17 +45,12 @@ class _AddExpenseState extends State<AddExpense> {
     });
   }
 
-  void _submitExpenseDate() {
-    final enteredAmount = double.tryParse(_amountController.text);
-    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
-
-    if (_titleController.text.trim().isEmpty ||
-        amountIsInvalid ||
-        _selectedDate == null) {
-      showDialog(
+  void _showDialog() {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Invalid input'),
+        builder: (ctx) => CupertinoAlertDialog(
+          title: const Text('Invalid input'),
           content: const Text(
               'Please make sure a valid title, amount, date and category was entered'),
           actions: [
@@ -64,6 +62,35 @@ class _AddExpenseState extends State<AddExpense> {
           ],
         ),
       );
+    }else if (Platform.isAndroid) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Invalid input'),
+          content: const Text(
+              'Please make sure a valid title, amount, date and category was entered'),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                },
+                child: Text('Okay'))
+          ],
+        ),
+      );
+    } else {
+
+    }
+  }
+
+  void _submitExpenseDate() {
+    final enteredAmount = double.tryParse(_amountController.text);
+    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
+
+    if (_titleController.text.trim().isEmpty ||
+        amountIsInvalid ||
+        _selectedDate == null) {
+      _showDialog();
       return;
     }
     widget.onAddExpense(
@@ -208,57 +235,59 @@ class _AddExpenseState extends State<AddExpense> {
                 const SizedBox(
                   height: 16,
                 ),
-                if(width >= 600)
-                  Row(children: [
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _submitExpenseDate,
-                      child: const Text('Save Expense'),
-                    )
-                  ],)
+                if (width >= 600)
+                  Row(
+                    children: [
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _submitExpenseDate,
+                        child: const Text('Save Expense'),
+                      )
+                    ],
+                  )
                 else
-                Row(
-                  children: [
-                    DropdownButton(
-                      value: _selectedCategory,
-                      items: Category.values
-                          .map(
-                            (catregory) => DropdownMenuItem(
-                              value: catregory,
-                              child: Text(
-                                catregory.name.toUpperCase(),
+                  Row(
+                    children: [
+                      DropdownButton(
+                        value: _selectedCategory,
+                        items: Category.values
+                            .map(
+                              (catregory) => DropdownMenuItem(
+                                value: catregory,
+                                child: Text(
+                                  catregory.name.toUpperCase(),
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
-                        setState(() {
-                          _selectedCategory = value;
-                        });
-                      },
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _submitExpenseDate,
-                      child: const Text('Save Expense'),
-                    )
-                  ],
-                )
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          setState(() {
+                            _selectedCategory = value;
+                          });
+                        },
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _submitExpenseDate,
+                        child: const Text('Save Expense'),
+                      )
+                    ],
+                  )
               ],
             ),
           ),
